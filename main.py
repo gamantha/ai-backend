@@ -1,7 +1,7 @@
 import math
 import os
 import time
-
+import ssl
 
 from mrun import MRun
 from dbconfig import DBConfig
@@ -91,7 +91,13 @@ def protected():
 
 
 if __name__ == "__main__":
-    app.run(ssl_context='adhoc', debug=True)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    context.verify_mode = ssl.CERT_REQUIRED
+    # context.load_verify_locations('./ca-crt.pem')
+    context.load_cert_chain('c:/cert/certificate.crt', 'c:/cert/privateKey.key')
+    app.run('0.0.0.0', 5000, ssl_context=context)
+
+    # app.run(ssl_context='adhoc', debug=True)
 
 # if __name__ == "__main__":
 #     app.run(ssl_context=('cert.pem', 'key.pem'))
