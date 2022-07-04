@@ -1,6 +1,6 @@
 import os
 
-import mobile
+
 from mrun import MRun
 from dbconfig import DBConfig
 

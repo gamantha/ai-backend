@@ -1,8 +1,8 @@
 import math
 import os
 import time
-import mobile
-import cc
+
+
 from mrun import MRun
 from dbconfig import DBConfig
 
@@ -25,10 +25,6 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 
-from mobile import mobile_blueprint
-from ntmc_mobile import ntmc_mobile_blueprint
-from cc import cc_blueprint
-from admin import admin_blueprint
 from ai import ai_blueprint
 from sqlalchemy import create_engine
 from werkzeug.utils import secure_filename
@@ -40,10 +36,7 @@ import logging
 
 app = Flask(__name__)
 CORS(app)
-app.register_blueprint(mobile_blueprint)
-app.register_blueprint(ntmc_mobile_blueprint)
-app.register_blueprint(cc_blueprint)
-app.register_blueprint(admin_blueprint)
+
 app.register_blueprint(ai_blueprint)
 logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
