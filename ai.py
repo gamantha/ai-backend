@@ -189,8 +189,8 @@ def find_match_portrait():
     cursor = db.cursor(dictionary=True)
     now = datetime.now()
     formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
-    query = "INSERT INTO ai_match_result (haystacks, portraits,output, result_json,created_at) VALUES (%s, %s,%s, %s, %s)"
-    cursor.execute(query, (str(haystacks)[1:-1], str(portraits)[1:-1], res['output_file'], str(res['result']), formatted_date,))
+    query = "INSERT INTO ai_match_result (haystacks, portraits, result_json,created_at) VALUES (%s, %s, %s, %s)"
+    cursor.execute(query, (str(haystacks)[1:-1], str(portraits)[1:-1], str(res['result']), formatted_date,))
     a_file = open(db_filename, "w")
     a_file.truncate()
     a_file.close()
