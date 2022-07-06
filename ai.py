@@ -134,7 +134,7 @@ def upload_portrait():
             print(newfilename_ext)
             result = dict()
             if create_portrait_result:
-                db.reconnect()
+                db = get_db()
                 cursor = db.cursor(dictionary=True)
                 group = ""
                 tags = ""
