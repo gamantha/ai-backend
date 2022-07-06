@@ -1,6 +1,6 @@
 import os
 import os.path
-from flask import Blueprint
+from flask import Blueprint, g
 from dbconfig import DBConfig
 # from werkzeug.security import safe_str_cmp
 import mysql.connector as mysql
@@ -41,7 +41,17 @@ app.config['UPLOAD_HAYSTACK'] = environ.get('UPLOAD_HAYSTACK')
 
 
 dbObj = DBConfig()
-db = dbObj.connect()
+
+
+
+def get_db():
+    """Opens a new database connection if there is none yet for the
+    current application context.
+    """
+    if not hasattr(g, 'mysql_db'):
+        g.mysql_db = dbObj.connect()
+    return g.mysql_db
+
 
 ai_blueprint = Blueprint('ai_blueprint', __name__, url_prefix="/ai")
 
@@ -63,7 +73,7 @@ def test(self=None):
 
 @ai_blueprint.route('/list_portrait', methods=["GET"])
 def list_portrait():
-    db.reconnect()
+    db = get_db()
     cursor = db.cursor(dictionary=True)
     query = "SELECT id, original_filename, portrait_filename, ai_portrait_uploads.group,  tags, created_at, modified_at from ai_portrait_uploads"
     cursor.execute(query,)
@@ -175,7 +185,7 @@ def find_match_portrait():
     Brimob_Luxand.populate_portrait_db(db_filename, portraits)
     res = Brimob_Luxand.find_match_portrait(db_filename, threshold, haystacks)
     print(res)
-    db.reconnect()
+    db = get_db()
     cursor = db.cursor(dictionary=True)
     now = datetime.now()
     formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
@@ -203,7 +213,7 @@ def find_match_portrait():
 
 @ai_blueprint.route('/list_haystack', methods=["GET"])
 def list_haystack():
-    db.reconnect()
+    db = get_db()
     cursor = db.cursor(dictionary=True)
     query = "SELECT id, filename, ai_haystack_uploads.group,  tags, created_at, modified_at from ai_haystack_uploads"
     cursor.execute(query,)
@@ -217,7 +227,7 @@ def list_haystack():
 def remove_haystack():
     res = dict()
     filenames = request.json.get('filenames')
-    db.reconnect()
+    db = get_db()
     cursor = db.cursor(dictionary=True)
 
     for filename in filenames:
@@ -236,7 +246,7 @@ def remove_haystack():
 def remove_portrait():
     res = dict()
     filenames = request.json.get('filenames')
-    db.reconnect()
+    db = get_db()
     cursor = db.cursor(dictionary=True)
 
     for filename in filenames:
@@ -255,7 +265,7 @@ def remove_portrait():
 def remove_original_portrait():
     res = dict()
     filenames = request.json.get('filenames')
-    db.reconnect()
+    db = get_db()
     cursor = db.cursor(dictionary=True)
 
     for filename in filenames:
@@ -307,7 +317,7 @@ def upload_haystack():
             file.save(os.path.join(app.config['UPLOAD_HAYSTACK'] + "/" + newfilename_ext))
             print(newfilename_ext)
 
-            db.reconnect()
+            db = get_db()
             cursor = db.cursor(dictionary=True)
             group = ""
             tags = ""
