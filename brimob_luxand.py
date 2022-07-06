@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import mysql.connector as mysql
 from os.path import exists
 import PIL
-from PIL import ImageDraw
+from PIL import ImageDraw, ImageFont
 import time
 
 
@@ -33,7 +33,7 @@ class Brimob_Luxand:
             print('\nCannot open', db_filename, 'database file.\nUse "-a" option to create database.');
             exit(1)
 
-        def draw_features(f,draw):
+        def draw_features(f,draw,n,percent):
             def dot_center(dots):  # calc geometric center of dots
                 return sum(p.x for p in dots) / len(dots), sum(p.y for p in dots) / len(dots)
 
@@ -47,14 +47,20 @@ class Brimob_Luxand:
             # container = graph.beginContainer()
             # graph.translateTransform(*center).rotateTransform(angle).ellipse(facePen, *frame)  # draw frame
             # graph.endContainer(container)
-            draw.rectangle((xl-w/2, yl-h/2, xl+w, yr+h*0.8), fill=None, outline="red")
+            draw.rectangle((xl-w/2, yl-h/2, xl+w, yr+h*0.8), fill=None, outline="red", width=4)
+            # specified font size
+            font = ImageFont.truetype(r'C:\Users\System-Pc\Desktop\arial.ttf', 12)
+            texttodisplay = os.path.splitext(os.path.basename(n))[0] + "("+percent+"%)"
+            draw.text((xl-w/2 + 10, yl-h/2 + 10), texttodisplay, font=font,fill=(255,0,0,255))
             # print(xl, yl, xr, yr)
             # for p in f: graph.circle(featurePen, p.x, p.y, 3)  # draw features
         output = dict()
         matches = []
         output['matches'] = []
+        outpath = ''
         for haystack in haystacks:
             haystack_path = os.path.normcase(os.path.abspath(environ.get('UPLOAD_HAYSTACK') + haystack))
+            print("ini")
             ts = time.time()
             timestamp = os.path.splitext(str(ts))[0]
             if os.path.exists(haystack_path):
@@ -79,7 +85,7 @@ class Brimob_Luxand:
                         percent = template.Match(ft) * 100
                         if percent > threshold:
                             print(os.path.basename(n) + " -----> " + str(percent))
-                            draw_features(img.DetectFacialFeatures(p), draw)
+                            draw_features(img.DetectFacialFeatures(p), draw, n, str(math.floor(percent)))
                             # temp_dict[os.path.basename(n)] = str(percent)
                             temp2_dict["portrait"] = os.path.basename(n)
                             temp2_dict["match_percentage"] = str(percent)
@@ -91,14 +97,14 @@ class Brimob_Luxand:
                 # matches[] = temp_dict
                 output_path = os.path.join(environ.get('OUTPUT_FOLDER') + 'output-' + haystack + '-' + timestamp + ".jpg")
                 print(output_path)
-                draw_features(img.DetectFacialFeatures(p), draw)
+                # draw_features(img.DetectFacialFeatures(p), draw)
                 im.save(output_path, quality=95)
-
+                outpath = os.path.basename(output_path)
                 # im.SaveToFile("./putput.jpg", quality=95)
             else:
                 print("not exist")
             output['result'] = matches
-            output['output_file'] = os.path.basename(output_path)
+            output['output_file'] = outpath
         return output
 
 
