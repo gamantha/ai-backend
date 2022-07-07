@@ -88,7 +88,7 @@ class Brimob_Luxand:
                     print("going into loop")
                     for n, ft in src:
                         percent = template.Match(ft) * 100
-                        print(percent)
+                        print(n + ":" + percent)
                         if percent > threshold:
                             print(os.path.basename(n) + " -----> " + str(percent))
                             draw_features(img.DetectFacialFeatures(p), draw, n, str(math.floor(percent)))
