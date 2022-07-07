@@ -160,14 +160,17 @@ class Brimob_Luxand:
         FSDK.SetFaceDetectionThreshold(face_detection_threshold) #1 - 5. low get more false psotives
 
         print("Detecting face...")
+
         for w in internal_resize_width_array:
             print(w)
             FSDK.SetFaceDetectionParameters(False, False,w)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidth
             try:
                 face = img.DetectFace()  # detect face in the image
+                break
             except:
                 if w >= max_internal_resize_width:
                     return 0
+
 
 
         maxWidth, maxHeight = 337, 450
@@ -206,6 +209,7 @@ class Brimob_Luxand:
             FSDK.SetFaceDetectionParameters(False, False,w)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidth
             try:
                 face = img.DetectFace()  # detect face in the image
+                break
             except:
                 if w >= max_internal_resize_width:
                     return 0
