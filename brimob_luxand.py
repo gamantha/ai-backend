@@ -102,6 +102,8 @@ class Brimob_Luxand:
 
                 temp_dict["haystack"] = haystack
                 temp_dict["match_found"] = temp_match
+                print("+++++++++++++++")
+                print(temp_match)
                 output_path = os.path.join(environ.get('OUTPUT_FOLDER') + 'output-' + os.path.splitext(haystack)[0] + '-' + timestamp + ".jpg")
                 outpath = os.path.basename(output_path)
                 temp_dict['output_file'] = outpath
