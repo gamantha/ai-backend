@@ -11,11 +11,7 @@ from PIL import ImageDraw, ImageFont
 import time
 
 
-basedir = path.abspath(path.dirname(__file__))
-load_dotenv(path.join(basedir, '.env'))
-license_key = environ.get('license_key')
-FSDK.ActivateLibrary(license_key);
-FSDK.Initialize()
+
 
 internal_resize_width = 384
 internal_resize_width_array = [50,200,384,512,2000]
@@ -23,19 +19,28 @@ max_internal_resize_width = max(internal_resize_width_array)
 face_detection_threshold = 5
 
 class Brimob_Luxand:
+
+    def __init__(self):
+        print("Initializing FSDK... ", end='')
+        basedir = path.abspath(path.dirname(__file__))
+        load_dotenv(path.join(basedir, '.env'))
+        license_key = environ.get('license_key')
+        FSDK.ActivateLibrary(license_key);
+        FSDK.Initialize()
+
     def test(self):
         print("tesT")
         return "test dari brimob luxand"
 
 
-    def find_match_portrait(db_filename, threshold, haystacks):
-        basedir = path.abspath(path.dirname(__file__))
-        load_dotenv(path.join(basedir, '.env'))
-        license_key = environ.get('license_key')
-
-        print("Initializing FSDK... ", end='')
-        FSDK.ActivateLibrary(license_key);
-        FSDK.Initialize()
+    def find_match_portrait(self,db_filename, threshold, haystacks):
+        # basedir = path.abspath(path.dirname(__file__))
+        # load_dotenv(path.join(basedir, '.env'))
+        # license_key = environ.get('license_key')
+        #
+        # # print("Initializing FSDK... ", end='')
+        # FSDK.ActivateLibrary(license_key);
+        # FSDK.Initialize()
         print("Find match portrait .........")
         output = dict()
         try:  # read all photo from database
@@ -146,12 +151,13 @@ class Brimob_Luxand:
         return output
 
 
-    def populate_portrait_db(db_filename, needles):
+    def populate_portrait_db(self,db_filename, needles):
         print("Populating DB .........")
         # print("Initializing FSDK... ", end='')
         # print("OK\nLicense info:", FSDK.GetLicenseInfo())
-        # FSDK.SetFaceDetectionParameters(True, False, 2000)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidthTrue 384 or 512 value
-        # FSDK.SetFaceDetectionThreshold(face_detection_threshold)
+        ### DIBAWAH INI KALAU DIBKIN 2000 jadi hanya bisa jalan seklai
+        FSDK.SetFaceDetectionParameters(True, False, 384)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidthTrue 384 or 512 value
+        FSDK.SetFaceDetectionThreshold(face_detection_threshold)
         with open(db_filename, 'a+') as db:
             for needle in needles:
                 print("Populating DB - needles.........")

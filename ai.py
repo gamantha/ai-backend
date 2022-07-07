@@ -182,9 +182,10 @@ def find_match_portrait():
     print(haystacks)
     res = dict()
     db_filename = "search.db"
-    Brimob_Luxand.populate_portrait_db(db_filename, portraits)
+    bri = Brimob_Luxand()
+    bri.populate_portrait_db(db_filename, portraits)
     print("after populate")
-    res = Brimob_Luxand.find_match_portrait(db_filename, threshold, haystacks)
+    res = bri.find_match_portrait(db_filename, threshold, haystacks)
     print(res)
     db = get_db()
     cursor = db.cursor(dictionary=True)
