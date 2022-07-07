@@ -29,14 +29,22 @@ class Brimob_Luxand:
 
 
     def find_match_portrait(db_filename, threshold, haystacks):
+        basedir = path.abspath(path.dirname(__file__))
+        load_dotenv(path.join(basedir, '.env'))
+        license_key = environ.get('license_key')
 
+        print("Initializing FSDK... ", end='')
+        FSDK.ActivateLibrary(license_key);
+        FSDK.Initialize()
+        print("Find match portrait .........")
+        output = dict()
         try:  # read all photo from database
             with open(db_filename) as db:
                 base = dict(l.rsplit(' ', 1) for l in db if l)
         except FileNotFoundError:
             print('\nCannot open', db_filename, 'database file.\nUse "-a" option to create database.');
             exit(1)
-
+        #
         def draw_features(f,draw,n,percent):
             def dot_center(dots):  # calc geometric center of dots
                 return sum(p.x for p in dots) / len(dots), sum(p.y for p in dots) / len(dots)
@@ -58,24 +66,39 @@ class Brimob_Luxand:
             draw.text((xl-w/2 + 10, yl-h/2 + 10), texttodisplay, font=font,fill=(255,0,0,255))
             # print(xl, yl, xr, yr)
             # for p in f: graph.circle(featurePen, p.x, p.y, 3)  # draw features
-        output = dict()
+        #
         matches = []
         output['matches'] = []
         outpath = ''
         for haystack in haystacks:
             haystack_path = os.path.normcase(os.path.abspath(environ.get('UPLOAD_HAYSTACK') + haystack))
-            print("ini")
             ts = time.time()
             timestamp = os.path.splitext(str(ts))[0]
             if os.path.exists(haystack_path):
+                print("inside if")
+                # FSDK.get_all_fsdk_exceptions()
                 img = FSDK.Image(haystack_path)
                 im = PIL.Image.open(haystack_path)
                 print("-")
                 print(haystack_path)
                 print("--")
                 draw = ImageDraw.Draw(im)
+                # # for w in internal_resize_width_array:
+                # #     print(w)
+                # #     FSDK.SetFaceDetectionParameters(False, False, w)
+                # #     try:
+                # #         face = img.DetectFace()  # detect face in the image
+                # #         break
+                # #     except:
+                # #         if w >= max_internal_resize_width:
+                # #             return 0
+                FSDK.SetFaceDetectionParameters(True, False, 2000)
+
                 faces = img.DetectMultipleFaces()
-                # print(faces)
+                # FSDK.FreeImage(img)
+                # FSDK.Initialize()
+                print("FACES : .......")
+                print(len(faces))
                 temp_array = []
                 temp_dict = dict()
                 temp_portrait = dict()
@@ -85,12 +108,9 @@ class Brimob_Luxand:
 
                     template = img.GetFaceTemplate(p)
                     src = ((n, FSDK.FaceTemplate(*base64.b64decode(ft))) for n, ft in base.items())
-                    print("going into loop")
                     for n, ft in src:
                         percent = template.Match(ft) * 100
-                        print(n)
-                        print(">>>>>>>>>")
-                        print(percent)
+                        print(n + " >> " + str(percent))
                         if percent > threshold:
                             temp2_dict = dict()
                             print(os.path.basename(n) + " -----> " + str(percent))
@@ -98,7 +118,7 @@ class Brimob_Luxand:
                             # temp_dict[os.path.basename(n)] = str(percent)
                             string_to_split = os.path.basename(n)
                             temp2_dict["portrait"] = os.path.basename(n)
-                            temp2_dict["original"] = "original-" + string_to_split.split("-")[1]
+                            # temp2_dict["original"] = "original-" + string_to_split.split("-")[1]
                             temp2_dict["match_percentage"] = str(percent)
                             print(temp2_dict)
                             temp_match.append(temp2_dict)
@@ -113,34 +133,41 @@ class Brimob_Luxand:
                 matches.append(temp_dict)
                 # matches[] = temp_dict
 
-                print(output_path)
+
                 # draw_features(img.DetectFacialFeatures(p), draw)
                 im.save(output_path, quality=95)
-
-
-                # im.SaveToFile("./putput.jpg", quality=95)
+                print(output_path)
             else:
                 print("not exist")
-            output['result'] = matches
-            # output['output_file'] = outpath
+        output['result'] = matches
+        # output['output_file'] = outpath
+        db.close()
+        # FSDK.Finalize()
         return output
 
 
     def populate_portrait_db(db_filename, needles):
+        print("Populating DB .........")
         # print("Initializing FSDK... ", end='')
         # print("OK\nLicense info:", FSDK.GetLicenseInfo())
-        # FSDK.SetFaceDetectionParameters(True, True, internal_resize_width)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidthTrue 384 or 512 value
+        # FSDK.SetFaceDetectionParameters(True, False, 2000)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidthTrue 384 or 512 value
         # FSDK.SetFaceDetectionThreshold(face_detection_threshold)
         with open(db_filename, 'a+') as db:
             for needle in needles:
+                print("Populating DB - needles.........")
                 portrait_path = os.path.normcase(os.path.abspath(environ.get('UPLOAD_PORTRAIT') + needle))
+                print(portrait_path)
                 if os.path.exists(portrait_path):
                     face_template = FSDK.Image(portrait_path).GetFaceTemplate()  # get template of detected face
+                    print("Populating DB - portrait path.........")
                     ft = base64.b64encode(face_template).decode('utf-8')
                     print(portrait_path, ft, file=db)
                     print(os.path.basename(portrait_path), 'is added to the database.')
                 else :
                     print("not exist")
+
+        # exit(1)
+        db.close()
         return "image mtch result"
 
 
@@ -168,23 +195,27 @@ class Brimob_Luxand:
         FSDK.SetFaceDetectionThreshold(face_detection_threshold) #1 - 5. low get more false psotives
 
         print("Detecting face...")
-
-        for w in internal_resize_width_array:
-            print(w)
-            FSDK.SetFaceDetectionParameters(False, False,w)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidth
-            try:
-                face = img.DetectFace()  # detect face in the image
-                break
-            except:
-                if w >= max_internal_resize_width:
-                    return 0
+        FSDK.SetFaceDetectionParameters(True, False,2000)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidth
+        try:
+            face = img.DetectFace()  # detect face in the image
+        except:
+            return 0
+        # for w in internal_resize_width_array:
+        #     print(w)
+        #     FSDK.SetFaceDetectionParameters(True, False,w)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidth
+        #     try:
+        #         face = img.DetectFace()  # detect face in the image
+        #         break
+        #     except:
+        #         if w >= max_internal_resize_width:
+        #             return 0
 
 
 
         maxWidth, maxHeight = 337, 450
         img = img.Crop(*face.rect).Resize(max((maxWidth + 0.4) / (face.w + 1),
                                               (maxHeight + 0.4) / (face.w + 1)))  # crop and resize face image inplace
-        img.SaveToFile(outpath, quality=85)  # save face image to file with given compression quality
+        img.SaveToFile(outpath, quality=100)  # save face image to file with given compression quality
 
         print("File '%s' with detected face is created." % outpath)
         return 1
@@ -211,16 +242,21 @@ class Brimob_Luxand:
         img = FSDK.Image(inputFileName)  # create image from file
 
         FSDK.SetFaceDetectionThreshold(face_detection_threshold)
+        FSDK.SetFaceDetectionParameters(True, False,2000)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidth
+        try:
+            face = img.DetectFace()  # detect face in the image
+        except:
+            return 0
 
-        for w in internal_resize_width_array:
-            print(w)
-            FSDK.SetFaceDetectionParameters(False, False,w)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidth
-            try:
-                face = img.DetectFace()  # detect face in the image
-                break
-            except:
-                if w >= max_internal_resize_width:
-                    return 0
+        # for w in internal_resize_width_array:
+        #     print(w)
+        #     FSDK.SetFaceDetectionParameters(True, False,w)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidth
+        #     try:
+        #         face = img.DetectFace()  # detect face in the image
+        #         break
+        #     except:
+        #         if w >= max_internal_resize_width:
+        #             return 0
 
         maxWidth, maxHeight = 337, 450
         img = img.Crop(*face.rect).Resize(max((maxWidth + 0.4) / (face.w + 1),

@@ -27,7 +27,7 @@ print("OK\nLicense info:", FSDK.GetLicenseInfo())
 
 print("\nLoading file", inputFileName, "...")
 img = FSDK.Image(inputFileName) # create image from file
-FSDK.SetFaceDetectionParameters(True, True, 2000) # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidthTrue
+FSDK.SetFaceDetectionParameters(True, True, 5000) # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidthTrue
 FSDK.SetFaceDetectionThreshold(5)
 
 print("Detecting faces...")
