@@ -85,8 +85,10 @@ class Brimob_Luxand:
                     temp2_dict = dict()
                     template = img.GetFaceTemplate(p)
                     src = ((n, FSDK.FaceTemplate(*base64.b64decode(ft))) for n, ft in base.items())
+                    print("going into loop")
                     for n, ft in src:
                         percent = template.Match(ft) * 100
+                        print(percent)
                         if percent > threshold:
                             print(os.path.basename(n) + " -----> " + str(percent))
                             draw_features(img.DetectFacialFeatures(p), draw, n, str(math.floor(percent)))
