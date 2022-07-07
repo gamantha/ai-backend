@@ -80,6 +80,7 @@ class Brimob_Luxand:
                 temp_dict = dict()
                 temp_portrait = dict()
                 temp_match = []
+                temp_match_temp = []
                 for p in faces:
                     # print(p)
                     temp2_dict = dict()
@@ -88,9 +89,9 @@ class Brimob_Luxand:
                     print("going into loop")
                     for n, ft in src:
                         percent = template.Match(ft) * 100
-                        print(n)
-                        print(">>>>>>>>>")
-                        print(percent)
+                        # print(n)
+                        # print(">>>>>>>>>")
+                        # print(percent)
                         if percent > threshold:
                             print(os.path.basename(n) + " -----> " + str(percent))
                             draw_features(img.DetectFacialFeatures(p), draw, n, str(math.floor(percent)))
@@ -101,9 +102,10 @@ class Brimob_Luxand:
                             temp2_dict["match_percentage"] = str(percent)
                             print(temp2_dict)
                             temp_match.append(temp2_dict)
+                    temp_match_temp.append(temp_match)
 
                 temp_dict["haystack"] = haystack
-                temp_dict["match_found"] = temp_match
+                temp_dict["match_found"] = temp_match_temp
                 print("+++++++++++++++")
                 print(temp_match)
                 output_path = os.path.join(environ.get('OUTPUT_FOLDER') + 'output-' + os.path.splitext(haystack)[0] + '-' + timestamp + ".jpg")
