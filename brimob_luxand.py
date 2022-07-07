@@ -97,6 +97,7 @@ class Brimob_Luxand:
                             temp2_dict["portrait"] = os.path.basename(n)
                             temp2_dict["original"] = "original-" + string_to_split.split("-")[1]
                             temp2_dict["match_percentage"] = str(percent)
+                            print(temp2_dict)
                             temp_match.append(temp2_dict)
 
                 temp_dict["haystack"] = haystack
