@@ -33,14 +33,7 @@ class Brimob_Luxand:
         return "test dari brimob luxand"
 
 
-    def find_match_portrait(self,db_filename, threshold, haystacks):
-        # basedir = path.abspath(path.dirname(__file__))
-        # load_dotenv(path.join(basedir, '.env'))
-        # license_key = environ.get('license_key')
-        #
-        # # print("Initializing FSDK... ", end='')
-        # FSDK.ActivateLibrary(license_key);
-        # FSDK.Initialize()
+    def find_match_portrait(self,db_filename, threshold, haystacks, portraits):
         print("Find match portrait .........")
         output = dict()
         try:  # read all photo from database
@@ -50,7 +43,7 @@ class Brimob_Luxand:
             print('\nCannot open', db_filename, 'database file.\nUse "-a" option to create database.');
             exit(1)
         #
-        def draw_features(f,draw,n,percent):
+        def draw_features(f,draw,n,percent, color):
             def dot_center(dots):  # calc geometric center of dots
                 return sum(p.x for p in dots) / len(dots), sum(p.y for p in dots) / len(dots)
 
@@ -64,20 +57,27 @@ class Brimob_Luxand:
             # container = graph.beginContainer()
             # graph.translateTransform(*center).rotateTransform(angle).ellipse(facePen, *frame)  # draw frame
             # graph.endContainer(container)
-            draw.rectangle((xl-w/2, yl-h/2, xl+w, yr+h*0.8), fill=None, outline="red", width=4)
+            draw.rectangle((xl-w/2, yl-h/2, xl+w, yr+h*0.8), fill=None, outline=color, width=4)
             # specified font size
             font = ImageFont.truetype(r'C:\Users\System-Pc\Desktop\arial.ttf', 12)
             texttodisplay = os.path.splitext(os.path.basename(n))[0] + "("+percent+"%)"
-            draw.text((xl-w/2 + 10, yl-h/2 + 10), texttodisplay, font=font,fill=(255,0,0,255))
+            # draw.text((xl-w/2 + 10, yl-h/2 + 10), texttodisplay, font=font,fill=(255,0,0,255))
             # print(xl, yl, xr, yr)
             # for p in f: graph.circle(featurePen, p.x, p.y, 3)  # draw features
         #
         matches = []
+        portraitcolor = dict()
         output['matches'] = []
         outpath = ''
+        for portrait in portraits:
+            portraitcolor[portrait['img']] = portrait['color']
+
+        print("portrait color")
+        print(portraitcolor)
         for haystack in haystacks:
-            haystack_path = os.path.normcase(os.path.abspath(environ.get('UPLOAD_HAYSTACK') + haystack))
+            haystack_path = os.path.normcase(os.path.abspath(environ.get('UPLOAD_HAYSTACK') + haystack['img']))
             ts = time.time()
+
             timestamp = os.path.splitext(str(ts))[0]
             if os.path.exists(haystack_path):
                 print("inside if")
@@ -88,20 +88,10 @@ class Brimob_Luxand:
                 print(haystack_path)
                 print("--")
                 draw = ImageDraw.Draw(im)
-                # # for w in internal_resize_width_array:
-                # #     print(w)
-                # #     FSDK.SetFaceDetectionParameters(False, False, w)
-                # #     try:
-                # #         face = img.DetectFace()  # detect face in the image
-                # #         break
-                # #     except:
-                # #         if w >= max_internal_resize_width:
-                # #             return 0
                 FSDK.SetFaceDetectionParameters(True, False, 2000)
 
                 faces = img.DetectMultipleFaces()
-                # FSDK.FreeImage(img)
-                # FSDK.Initialize()
+
                 print("FACES : .......")
                 print(len(faces))
                 temp_array = []
@@ -109,17 +99,16 @@ class Brimob_Luxand:
                 temp_portrait = dict()
                 temp_match = []
                 for p in faces:
-                    # print(p)
-
                     template = img.GetFaceTemplate(p)
                     src = ((n, FSDK.FaceTemplate(*base64.b64decode(ft))) for n, ft in base.items())
                     for n, ft in src:
+                        color = portraitcolor[os.path.basename(n)]
                         percent = template.Match(ft) * 100
                         print(n + " >> " + str(percent))
                         if percent > threshold:
                             temp2_dict = dict()
                             print(os.path.basename(n) + " -----> " + str(percent))
-                            draw_features(img.DetectFacialFeatures(p), draw, n, str(math.floor(percent)))
+                            draw_features(img.DetectFacialFeatures(p), draw, n, str(math.floor(percent)), color)
                             # temp_dict[os.path.basename(n)] = str(percent)
                             string_to_split = os.path.basename(n)
                             temp2_dict["portrait"] = os.path.basename(n)
@@ -128,11 +117,11 @@ class Brimob_Luxand:
                             print(temp2_dict)
                             temp_match.append(temp2_dict)
 
-                temp_dict["haystack"] = haystack
+                temp_dict["haystack"] = haystack['img']
                 temp_dict["match_found"] = temp_match
                 print("+++++++++++++++")
                 print(temp_match)
-                output_path = os.path.join(environ.get('OUTPUT_FOLDER') + 'output-' + os.path.splitext(haystack)[0] + '-' + timestamp + ".jpg")
+                output_path = os.path.join(environ.get('OUTPUT_FOLDER') + 'output-' + os.path.splitext(haystack['img'])[0] + '-' + timestamp + ".jpg")
                 outpath = os.path.basename(output_path)
                 temp_dict['output_file'] = outpath
                 matches.append(temp_dict)
@@ -147,21 +136,18 @@ class Brimob_Luxand:
         output['result'] = matches
         # output['output_file'] = outpath
         db.close()
-        # FSDK.Finalize()
+
         return output
 
 
     def populate_portrait_db(self,db_filename, needles):
         print("Populating DB .........")
-        # print("Initializing FSDK... ", end='')
-        # print("OK\nLicense info:", FSDK.GetLicenseInfo())
         ### DIBAWAH INI KALAU DIBKIN 2000 jadi hanya bisa jalan seklai
         FSDK.SetFaceDetectionParameters(True, False, 384)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidthTrue 384 or 512 value
         FSDK.SetFaceDetectionThreshold(face_detection_threshold)
         with open(db_filename, 'a+') as db:
             for needle in needles:
-                print("Populating DB - needles.........")
-                portrait_path = os.path.normcase(os.path.abspath(environ.get('UPLOAD_PORTRAIT') + needle))
+                portrait_path = os.path.normcase(os.path.abspath(environ.get('UPLOAD_PORTRAIT') + needle['img']))
                 print(portrait_path)
                 if os.path.exists(portrait_path):
                     face_template = FSDK.Image(portrait_path).GetFaceTemplate()  # get template of detected face
