@@ -112,7 +112,8 @@ class Brimob_Luxand:
                             # temp_dict[os.path.basename(n)] = str(percent)
                             string_to_split = os.path.basename(n)
                             temp2_dict["portrait"] = os.path.basename(n)
-                            # temp2_dict["original"] = "original-" + string_to_split.split("-")[1]
+                            temp2_dict["color"] = color
+                            temp2_dict["original"] = "original-" + string_to_split.split("-")[1]
                             temp2_dict["match_percentage"] = str(percent)
                             print(temp2_dict)
                             temp_match.append(temp2_dict)
