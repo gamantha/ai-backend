@@ -177,7 +177,12 @@ def upload_portrait():
 def find_match_portrait():
     portraits = request.json.get("portraits", None)
     haystacks = request.json.get("haystacks", None)
-    threshold = request.json.get("confidence_threshold", None)
+    confidence = request.json.get("confidence_threshold", None)
+    rotation = request.json.get("arbitrary_rotation", None)
+    rotation_angle = request.json.get("rotation_angle", None)
+    resize = request.json.get("internal_resize_width", None)
+    face = request.json.get("face_detection_threshold", None)
+
     print(portraits)
     print(haystacks)
     res = dict()
@@ -185,7 +190,7 @@ def find_match_portrait():
     bri = Brimob_Luxand()
     bri.populate_portrait_db(db_filename, portraits)
     print("after populate")
-    res = bri.find_match_portrait(db_filename, threshold, haystacks, portraits)
+    res = bri.find_match_portrait(db_filename, haystacks, portraits, confidence, rotation, rotation_angle, resize, face)
     print(res)
     db = get_db()
     cursor = db.cursor(dictionary=True)

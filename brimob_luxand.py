@@ -33,9 +33,11 @@ class Brimob_Luxand:
         return "test dari brimob luxand"
 
 
-    def find_match_portrait(self,db_filename, threshold, haystacks, portraits):
+    def find_match_portrait(self,db_filename, haystacks, portraits, confidence, rotation, rotation_angle, resize, face):
         print("Find match portrait .........")
         output = dict()
+        rotation_angle_bool = False
+        rotation_bool = False
         try:  # read all photo from database
             with open(db_filename) as db:
                 base = dict(l.rsplit(' ', 1) for l in db if l)
@@ -72,6 +74,10 @@ class Brimob_Luxand:
         for portrait in portraits:
             portraitcolor[portrait['img']] = portrait['color']
 
+        if str(rotation).lower() == "true":
+            rotation_bool = True
+        if str(rotation_angle).lower() == "true":
+            rotation_angle_bool = True
         print("portrait color")
         print(portraitcolor)
         for haystack in haystacks:
@@ -88,7 +94,7 @@ class Brimob_Luxand:
                 print(haystack_path)
                 print("--")
                 draw = ImageDraw.Draw(im)
-                FSDK.SetFaceDetectionParameters(True, False, 2000)
+                FSDK.SetFaceDetectionParameters(rotation_bool, rotation_angle_bool, resize)
 
                 faces = img.DetectMultipleFaces()
 
@@ -105,7 +111,7 @@ class Brimob_Luxand:
                         color = portraitcolor[os.path.basename(n)]
                         percent = template.Match(ft) * 100
                         print(n + " >> " + str(percent))
-                        if percent > threshold:
+                        if percent > confidence:
                             temp2_dict = dict()
                             print(os.path.basename(n) + " -----> " + str(percent))
                             draw_features(img.DetectFacialFeatures(p), draw, n, str(math.floor(percent)), color)
