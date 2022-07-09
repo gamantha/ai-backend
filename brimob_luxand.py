@@ -108,7 +108,7 @@ class Brimob_Luxand:
                     template = img.GetFaceTemplate(p)
                     src = ((n, FSDK.FaceTemplate(*base64.b64decode(ft))) for n, ft in base.items())
                     for n, ft in src:
-                        color = portraitcolor[os.path.basename(n)]
+                        color = str(portraitcolor[os.path.basename(n)])
                         percent = template.Match(ft) * 100
                         print(n + " >> " + str(percent))
                         if percent > confidence:
