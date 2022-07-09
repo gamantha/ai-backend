@@ -94,7 +94,7 @@ class Brimob_Luxand:
                 print(haystack_path)
                 print("--")
                 draw = ImageDraw.Draw(im)
-                FSDK.SetFaceDetectionParameters(rotation_bool, rotation_angle_bool, resize)
+                FSDK.SetFaceDetectionParameters(True, False, 2000)
                 FSDK.SetFaceDetectionThreshold(face)
                 faces = img.DetectMultipleFaces()
 
