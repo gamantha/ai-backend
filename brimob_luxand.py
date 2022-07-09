@@ -95,7 +95,7 @@ class Brimob_Luxand:
                 print("--")
                 draw = ImageDraw.Draw(im)
                 FSDK.SetFaceDetectionParameters(rotation_bool, rotation_angle_bool, resize)
-
+                FSDK.SetFaceDetectionThreshold(face)
                 faces = img.DetectMultipleFaces()
 
                 print("FACES : .......")
