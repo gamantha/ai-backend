@@ -187,6 +187,9 @@ def find_match_portrait():
     print(haystacks)
     res = dict()
     db_filename = "search.db"
+    a_file = open(db_filename, "w")
+    a_file.truncate()
+    a_file.close()
     bri = Brimob_Luxand()
     bri.populate_portrait_db(db_filename, portraits)
     print("after populate")
