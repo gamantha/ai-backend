@@ -191,7 +191,7 @@ def find_match_portrait():
     a_file.truncate()
     a_file.close()
     bri = Brimob_Luxand()
-    bri.populate_portrait_db(db_filename, portraits)
+    bri.populate_portrait_db(db_filename, portraits,rotation, rotation_angle, resize, face)
     print("after populate")
     res = bri.find_match_portrait(db_filename, haystacks, portraits, confidence, rotation, rotation_angle, resize, face)
     print(res)
@@ -201,9 +201,9 @@ def find_match_portrait():
     formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
     query = "INSERT INTO ai_match_result (haystacks, portraits, result_json,created_at) VALUES (%s, %s, %s, %s)"
     cursor.execute(query, (str(haystacks)[1:-1], str(portraits)[1:-1], str(res['result']), formatted_date,))
-    a_file = open(db_filename, "w")
-    a_file.truncate()
-    a_file.close()
+    # a_file = open(db_filename, "w")
+    # a_file.truncate()
+    # a_file.close()
 
     try:
         db.commit()

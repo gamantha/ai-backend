@@ -147,11 +147,18 @@ class Brimob_Luxand:
         return output
 
 
-    def populate_portrait_db(self,db_filename, needles):
-        print("Populating DB .........")
+    def populate_portrait_db(self,db_filename, needles,rotation, rotation_angle, resize, face):
+        print("Populating DB ////////// .........")
+        rotation_angle_bool = False
+        rotation_bool = False
+        if str(rotation).lower() == "true":
+            rotation_bool = True
+        if str(rotation_angle).lower() == "true":
+            rotation_angle_bool = True
+
         ### DIBAWAH INI KALAU DIBKIN 2000 jadi hanya bisa jalan seklai
-        FSDK.SetFaceDetectionParameters(True, False, 384)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidthTrue 384 or 512 value
-        FSDK.SetFaceDetectionThreshold(face_detection_threshold)
+        FSDK.SetFaceDetectionParameters(rotation_bool, rotation_angle_bool, resize)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidthTrue 384 or 512 value
+        FSDK.SetFaceDetectionThreshold(face)
         with open(db_filename, 'a+') as db:
             for needle in needles:
                 portrait_path = os.path.normcase(os.path.abspath(environ.get('UPLOAD_PORTRAIT') + needle['img']))
@@ -194,7 +201,7 @@ class Brimob_Luxand:
         FSDK.SetFaceDetectionThreshold(face_detection_threshold) #1 - 5. low get more false psotives
 
         print("Detecting face...")
-        FSDK.SetFaceDetectionParameters(True, False,2000)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidth
+        FSDK.SetFaceDetectionParameters(True, False,384)  # HandleArbitraryRotations, DetermineFaceRotationAngle, InternalResizeWidth
         try:
             face = img.DetectFace()  # detect face in the image
         except:
@@ -211,7 +218,8 @@ class Brimob_Luxand:
 
 
 
-        maxWidth, maxHeight = 337, 450
+        # maxWidth, maxHeight = 337, 450
+        maxWidth, maxHeight = 673, 900
         img = img.Crop(*face.rect).Resize(max((maxWidth + 0.4) / (face.w + 1),
                                               (maxHeight + 0.4) / (face.w + 1)))  # crop and resize face image inplace
         img.SaveToFile(outpath, quality=100)  # save face image to file with given compression quality
